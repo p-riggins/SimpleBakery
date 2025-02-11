@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Recipes</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+
+    <style>
+        main {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        aside {
+            background-color: #DDB892;
+            position: absolute;
+            width: 20%;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        section {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            overflow: hidden;
+        }
+
+        label {
+            display: inline-block;
+            padding: 7px 10px;
+            background-color: #6e5b3e;
+            cursor: pointer;
+            margin: 10px;
+            z-index: 3;
+            position: fixed;
+        }
+
+        .bar {
+            display: block;
+            background-color: #ffffff;
+            width: 30px;
+            height: 3px;
+            border-radius: 5px;
+            margin: 5px auto;
+            transition: background-color .5s ease-in, transform .5s ease-in, width .5s ease-in;
+        }
+
+        .content {
+            top: 0;
+            bottom: 0;
+            position: absolute;
+            right: 0;
+            left: 0;
+            background-color: #fff;
+            z-index: 2;
+            transition: transform .5s ease-in-out;
+            overflow-y: auto;
+        }
+
+        .asideList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: center;
+            border-top: 2px solid rgba(255, 255, 255, .7);
+            min-height: calc(100vh);
+        }
+
+        .asideAnchor {
+            border-bottom: 2px solid rgba(255, 255, 255, .7);
+            padding: 20px 0;
+            display: block;
+            color: #fff;
+            text-transform: uppercase;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        input[type="checkbox"] {
+            display: none;
+        }
+
+        input[type="checkbox"]:checked ~ .content {
+            transform: translateX(20%);
+        }
+
+        .col-md-10 {
+            min-width: 100%;
+        }
+
+        .navbar {
+            background-color: #ffffff;
+        }
+
+        .navbar-nav .nav-item .nav-link.active {
+            font-weight: bold;
+        }
+
+        .recipe-img {
+            cursor: pointer;
+            width: 98%;
+            align-self: center;
+            margin-top: 4px;
+            height: 200px; /* Height for the image */
+            object-fit: cover;
+        }
+
+        .modal-content {
+            background-color: #f8f9fa;
+        }
+
+        #recipebox {
+            background-color: #E6CCB2;
+            padding-top: 20px;
+            padding-bottom: 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-flow: row wrap;
+            gap: 100px; /* Maintain horizontal spacing */
+            justify-content: center;
+        }
+
+        .card {
+            width: calc(23% - 10px); /* Fixed width for each card */
+            max-height: 250px; /* Card height */
+            overflow: hidden; /* Hide overflow */
+            cursor: pointer; /* Make the entire card clickable */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Box shadow */
+            margin-bottom: 10px; /* Control vertical spacing */
+        }
+
+        .card-body {
+            display: flex;
+            flex-direction: column; /* Stack items vertically */
+            justify-content: center; /* Center vertically */
+            align-items: center; /* Center horizontally */
+            height: 100%; /* Use full height of the card */
+            padding: 10px; /* Padding around content */
+            text-align: center; /* Center text */
+        }
+
+        .btn {
+            background-color: #8f764f;
+            border-color: #8f764f;
+        }
+
+        .btn:hover {
+            background-color: #6e5b3e;
+            border-color: #6e5b3e;
+        }
+    </style>
+
+<nav class="navbar navbar-expand-lg navbar-light">
+    <a class="navbar-brand" href="#">
+        <img src="logo.png" alt="Logo" style="height: 40px;">
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link active" href="recipes.html">Recipes</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="inventory.html">Inventory</a>
+            </li>
+            <li class="nav-item">
+                <button class="btn btn-primary ml-2" onclick="location.href='login.html'">Log In</button>
+            </li>
+            <li class="nav-item">
+                <button class="btn btn-primary ml-2" onclick="location.href='register.html'">Register</button>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<main>
+    <aside>
+        <ul class="asideList">
+            <li><a href="#" class="asideAnchor" onclick="showCategory('all')">All</a></li>
+        </ul>
+    </aside>
+    <section>
+        <input type="checkbox" id="myInput">
+        <label for="myInput">
+            <span class="bar top"></span>
+            <span class="bar middle"></span>
+            <span class="bar bottom"></span>
+        </label>
+
+        <div class="content">
+            <div id="recipebox" class="col-md-10"></div>
+        </div>
+    </section>
+</main>
+
+<!-- Modal -->
+<div class="modal fade" id="recipeModal" tabindex="-1" role="dialog" aria-labelledby="recipeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="recipeModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="recipeDetails"></p>
+                <h3>Ingredients</h3>
+                <ul id="ingredientList"></ul>
+                <h3>Serving Size</h3>
+                <p id="servingSize">Serves 4</p>
+                <h3>Instructions</h3>
+                <ol id="instructionSteps"></ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<script src="/SessionCheck.js"></script> <!-- Include this script to check for session -->
+<script>
+    // Check for session in sessionStorage
+    var sessionID = sessionStorage.getItem('SessionID');
+    // Call the function to check session validation
+    sessionCheck(sessionID);
+
+function showMenu(recipeDetails) {
+    const [RecipeName, Description, ServingSize, Ingredients, Instructions] = recipeDetails;
+    $('#recipeModalLabel').text(RecipeName);
+    $('#recipeDetails').text(Description);
+    $('#servingSize').text(`Serves ${ServingSize}`);
+    $('#ingredientList').html(Ingredients.split(',').map(ingredient => `<li>${ingredient.trim()}</li>`).join(''));
+    $('#instructionSteps').html(Instructions.split('.').map(step => `<li>${step.trim()}</li>`).join(''));
+    $('#recipeModal').modal('show');
+}
+
+function showCategory(category) {
+    $('#recipebox .card').hide();
+    if (category === 'all') {
+        $('#recipebox .card').show();
+    } else {
+        $('#recipebox .' + category).show();
+    }
+}
+
+$(document).ready(function() {
+    $.ajax({
+        url: 'http://54.165.196.3/api/post/recipes/images/all',
+        method: "POST",
+        success: function(recipesData) {
+            console.log(recipesData); // Log the recipes data for debugging
+            
+            $("#recipebox").empty(); // Clear existing items
+            let categories = new Set(); // To store unique categories
+
+            // Iterate through the recipes data
+            recipesData.forEach((recipe, index) => {
+                const imageName = recipe.ImageName || 'img.jpg'; // Fallback image
+                const categoryName = recipe.CategoryName ? recipe.CategoryName.toLowerCase().replace(/\s/g, '') : 'unknown'; // Check for category
+
+                // Log the categoryName for debugging
+                console.log(`Recipe: ${recipe.RecipeName}, Category: ${recipe.CategoryName}`);
+
+                // Add category to the set
+                categories.add(categoryName);
+
+                const recipeCard = `
+                    <div class="card ${categoryName}" id="recipebox_${index + 1}">
+                        <img src="http://54.165.196.3/${imageName}" class="img-fluid recipe-img" alt="${recipe.RecipeName}">
+                        <div class="card-body">
+                            <h5 class="card-title">${recipe.RecipeName}</h5>
+                            <p class="card-text">Prep Time: ${recipe.PrepTime || '10 minutes'}</p>
+                        </div>
+                    </div>
+                `;
+
+                $("#recipebox").append(recipeCard); // Append the card to the recipebox container
+
+                // Attach click event to the card
+                $(`#recipebox_${index + 1}`).on('click', function() {
+                    showMenu([
+                        recipe.RecipeName,
+                        recipe.Description,
+                        recipe.ServingSize,
+                        recipe.Ingredients,
+                        recipe.Instructions
+                    ]);
+                });
+            });
+
+            // Populate categories in aside
+            categories.forEach(category => {
+                $(".asideList").append(`<li><a href="#" class="asideAnchor" onclick="showCategory('${category}')">${category.charAt(0).toUpperCase() + category.slice(1)}</a></li>`);
+            });
+
+            // Show all recipes initially
+            showCategory('all'); // Default to showing all recipes
+        },
+        error: function(error) {
+            console.log('Fetch Error:', error);
+        }
+    });
+});
+
+
+// Show all recipes initially
+showCategory('all'); // Default to showing all recipes
+
+</script>
+
+</body>
+</html>
